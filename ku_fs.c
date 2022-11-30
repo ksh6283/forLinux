@@ -48,7 +48,7 @@ void push(ListNode **list, int item)
         }
     }
 }
-int search(ListNode* head, int x)
+int lsearch(ListNode* head, int x)
 {
     ListNode* temp = head; // Initialize current
     while (temp != NULL) {
@@ -59,18 +59,50 @@ int search(ListNode* head, int x)
     return 0;
 }
 
+void itoa(int num, char *str){
+    int i=0;
+    int temp=1;
+    int digit = 0;
+
+    if(num==0){
+        str[0]='0';
+        str[1]='\n';
+        str[2]='\0';
+        return;
+    }
+
+    while(1){   
+        if( (num/temp) > 0)
+            digit++;
+        else
+            break;
+        temp *= 10;
+    }
+    temp /=10;    
+    for(i=0; i<digit; i++)    {    
+        *(str+i) = num/temp + '0';    
+        num -= ((num/temp) * temp);       
+        temp /=10;    
+    }
+    *(str+i) = '\n';
+    *(str+i+1) = '\0'; 
+} 
+
 typedef struct
 {
     int fd;
     int tnum;
     int len;  //탐색할 row의 수
     int lLen; //마지막 스레드가 탐색할 row의 수
+    int line;
 } for_search;
 
 char *str; 
 
 void *search(void *arg)
 {
+
+    
 
     int temp = 0;
     int slen = strlen(str);
@@ -81,20 +113,40 @@ void *search(void *arg)
     for_search *targ = (for_search *)arg;
     char buf[1000];
    
+    if(targ->len==0&&targ->lLen==0)
+        return 0;
+
+
     off_t pos;
 
     pos = 6 + (off_t)((targ->tnum) * (targ->len)) * 6;
 
+    
     if ((targ->tnum) != 0)
     {
-        pos -= slen+slen/5 +(slen-1)/6;
-        if(pos<=6)
-            pos=6;                         // slen-1 에 개행 포함
-        rsize = (targ->lLen) * 5 + 2*(slen - 1); //이건 slen일까 slen-1일까?
+        
+        if(slen>1&&(targ->len)!=0){
+            pos -= slen +(slen-2)/5;
+            rsize = (targ->lLen) * 5 + slen +(slen-2)/5+(slen - 1);
+        }else if((targ->len)==0){
+            pos-=slen;
+            rsize=(targ->lLen)*5+slen;
+        }else{
+            pos-=slen-1;
+            rsize=(targ->lLen) * 5 + slen -1+(slen - 1);
+        }
+            
+        // if(pos<=6){
+        //     rsize+=6-pos;
+        //     pos=6;
+        // }
+        
+        
+        
     }
     else
     {
-        rsize = (targ->len) * 5+slen-1;
+        rsize = (targ->len) * 5+slen -1;
     }
 
    
@@ -133,9 +185,9 @@ void *search(void *arg)
         {
             start += 5 * (targ->len) * (targ->tnum);
             if ((targ->tnum) != 0)
-                start -= slen - 1;
+                start -= slen-1;
             pthread_mutex_lock(&mutex);
-            if(!search(&head,start)) 
+            if(!lsearch(head,start)) 
                 push(&head,start);
             pthread_mutex_unlock(&mutex); 
             temp = 0;
@@ -145,34 +197,7 @@ void *search(void *arg)
     return 0;
 }
 
-void itoa(int num, char *str){
-    int i=0;
-    int temp=1;
-    int digit = 0;
 
-    if(num==0){
-        str[0]='0';
-        str[1]='\n';
-        str[2]='\0';
-        return;
-    }
-
-    while(1){   
-        if( (num/temp) > 0)
-            digit++;
-        else
-            break;
-        temp *= 10;
-    }
-    temp /=10;    
-    for(i=0; i<digit; i++)    {    
-        *(str+i) = num/temp + '0';    
-        num -= ((num/temp) * temp);       
-        temp /=10;    
-    }
-    *(str+i) = '\n';
-    *(str+i+1) = '\0'; 
-} 
 
 
 
@@ -210,6 +235,7 @@ int main(int argc, char **argv)
             arg[i].lLen = line - (tnum - 1) * (int)(line / tnum);
         else
             arg[i].lLen = (int)(line / tnum);
+        arg[i].line=line;
     }
 
     for (int i = 0; i < tnum; i++)
