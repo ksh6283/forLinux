@@ -48,6 +48,16 @@ void push(ListNode **list, int item)
         }
     }
 }
+int search(ListNode* head, int x)
+{
+    ListNode* temp = head; // Initialize current
+    while (temp != NULL) {
+        if (temp->data == x)
+            return 1;
+        temp = temp->link;
+    }
+    return 0;
+}
 
 typedef struct
 {
@@ -77,15 +87,17 @@ void *search(void *arg)
 
     if ((targ->tnum) != 0)
     {
-        pos -= slen;                         // slen-1 에 개행 포함
-        rsize = (targ->lLen) * 5 + slen - 1; //이건 slen일까 slen-1일까?
+        pos -= slen+slen/5 +(slen-1)/6;
+        if(pos<=6)
+            pos=6;                         // slen-1 에 개행 포함
+        rsize = (targ->lLen) * 5 + 2*(slen - 1); //이건 slen일까 slen-1일까?
     }
     else
     {
-        rsize = (targ->len) * 5;
+        rsize = (targ->len) * 5+slen-1;
     }
 
-    off_t originalPos = pos;
+   
 
     
     for (int i = 0; i < rsize; i++)
@@ -122,8 +134,9 @@ void *search(void *arg)
             start += 5 * (targ->len) * (targ->tnum);
             if ((targ->tnum) != 0)
                 start -= slen - 1;
-            pthread_mutex_lock(&mutex); 
-            push(&head,start);
+            pthread_mutex_lock(&mutex);
+            if(!search(&head,start)) 
+                push(&head,start);
             pthread_mutex_unlock(&mutex); 
             temp = 0;
             flag = slen;
