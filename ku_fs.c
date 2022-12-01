@@ -50,7 +50,7 @@ void push(ListNode **list, int item)
 }
 int lsearch(ListNode* head, int x)
 {
-    ListNode* temp = head; // Initialize current
+    ListNode* temp = head; 
     while (temp != NULL) {
         if (temp->data == x)
             return 1;
@@ -111,7 +111,8 @@ void *search(void *arg)
     int rsize;
 
     for_search *targ = (for_search *)arg;
-    char buf[1000];
+
+    char buf[500001];
    
     if(targ->len==0&&targ->lLen==0)
         return 0;
@@ -136,12 +137,7 @@ void *search(void *arg)
             rsize=(targ->lLen) * 5 + slen -1+(slen - 1);
         }
             
-        // if(pos<=6){
-        //     rsize+=6-pos;
-        //     pos=6;
-        // }
-        
-        
+       
         
     }
     else
@@ -156,7 +152,11 @@ void *search(void *arg)
     {
 
         if (pread(targ->fd, buf + sizeof(char) * i, 1, pos) == 0) 
+        {
             break;
+
+        }
+            
         pos += 1;
         if (buf[i] == '\n')
         {
@@ -168,7 +168,7 @@ void *search(void *arg)
     {
 
         if (buf[i] != str[temp])
-        { //연속안될 시 초기화
+        { 
             flag = slen;
             temp = 0;
             start = 0;
@@ -217,9 +217,11 @@ int main(int argc, char **argv)
     
     
     int fd, line, t_status;
-    pthread_t thread_id[tnum];
+    pthread_t  thread_id[tnum];
 
     char cline[6];
+
+
 
     fd = open(input, O_RDONLY);
     read(fd, cline, 6);
@@ -237,14 +239,12 @@ int main(int argc, char **argv)
             arg[i].lLen = (int)(line / tnum);
         arg[i].line=line;
     }
-
     for (int i = 0; i < tnum; i++)
     {
-        
         t_status = pthread_create(&thread_id[i], NULL, search, &arg[i]);
         if (t_status != 0)
         {
-            perror("pthread_create");
+            perror("pthread_create\n");
             exit(1);
         }
     }
