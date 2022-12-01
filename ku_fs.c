@@ -217,7 +217,7 @@ int main(int argc, char **argv)
     
     
     int fd, line, t_status;
-    pthread_t  thread_id[tnum];
+    pthread_t  *thread_id=(pthread_t *)malloc(sizeof(pthread_t) * tnum);
 
     char cline[6];
 
@@ -258,7 +258,7 @@ int main(int argc, char **argv)
         }
     }
     pthread_mutex_destroy(&mutex); 
-
+    free(thread_id);
     int fd2 = open(output, O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR|S_IWUSR);
     if ( fd2 < 0 ){
         perror("open");
